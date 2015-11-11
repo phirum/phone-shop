@@ -22,6 +22,9 @@ Template.pos_checkout.onRendered(function () {
     }, 500);
 });
 Template.pos_checkout.helpers({
+    locations: function () {
+        return Pos.Collection.Locations.find({branchId: Session.get('currentBranch')});
+    },
     transactionType: function () {
         return [
             {value: 'Sale', name: 'Sale'},
@@ -163,8 +166,8 @@ Template.pos_checkout.helpers({
 });
 
 Template.pos_checkout.events({
-    'keyup #voucher':function(){
-      checkIsUpdate();
+    'keyup #voucher': function () {
+        checkIsUpdate();
     },
     'keyup #description': function () {
         checkIsUpdate();
@@ -248,15 +251,15 @@ Template.pos_checkout.events({
     'click #btn-update-sale-data': function () {
         var saleId = $('#sale-id').val();
         if (saleId == "") return;
-        var branchId=Session.get('currentBranch');
+        var branchId = Session.get('currentBranch');
         var customer = $('#customer-id').val();
         var staff = $('#staff-id').val();
         var date = $('#input-sale-date').val();
         var transactionType = $('#transaction-type').val();
         var description = $('#description').val();
-        var voucher=$('#voucher').val();
-        var sale=Pos.Collection.Sales.findOne({branchId:branchId,voucher:voucher,_id:{$ne:saleId}});
-        if(sale!=null){
+        var voucher = $('#voucher').val();
+        var sale = Pos.Collection.Sales.findOne({branchId: branchId, voucher: voucher, _id: {$ne: saleId}});
+        if (sale != null) {
             alertify.warning('Voucher already exists. Please input other one.');
             return;
         }
@@ -266,7 +269,7 @@ Template.pos_checkout.events({
         set.saleDate = moment(date).toDate();
         set.transactionType = transactionType;
         set.description = description;
-        set.voucher=voucher;
+        set.voucher = voucher;
         Meteor.call('updateSale', saleId, set, function (error, result) {
             if (error)alertify.error(error.message);
         });
@@ -536,7 +539,6 @@ Template.pos_checkout.events({
         }
         return !(charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57));
     },
-
     'change .price': function (e) {
         var saleId = $('#sale-id').val();
         var val = $(e.currentTarget).val();
@@ -617,11 +619,11 @@ Template.pos_checkout.events({
          }*/
     },
     'click .staffInsertAddon': function () {
-        alertify.userStaff(fa('plus','Add New Staff'),renderTemplate(Template.pos_userStaffInsert));
+        alertify.userStaff(fa('plus', 'Add New Staff'), renderTemplate(Template.pos_userStaffInsert));
         // .maximize();
     },
     'click .customerInsertAddon': function () {
-        alertify.customer(fa('plus','Add New Customer'),renderTemplate(Template.pos_customerInsert));
+        alertify.customer(fa('plus', 'Add New Customer'), renderTemplate(Template.pos_customerInsert));
         // .maximize();
     },
     'change #product-id': function () {
@@ -726,25 +728,31 @@ function getValidatedValues(fieldName, val, branchId, saleId) {
         data.message = "Please input exchange rate for this branch.";
         return data;
     }
-    var voucher=$('#voucher').val();
-    if(voucher==''){
-        data.valid=false;
-        data.message="Please input voucher.";
+    var voucher = $('#voucher').val();
+    if (voucher == '') {
+        data.valid = false;
+        data.message = "Please input voucher.";
         return data;
-    }else{
-		if(saleId==''){
-        var sale=Pos.Collection.Sales.findOne({voucher:voucher,branchId:branchId,});
-        if(sale!=null){
-            data.valid=false;
-            data.message='Voucher already exists. Please input the other one.';
-            return data;
+    } else {
+        if (saleId == '') {
+            var sale = Pos.Collection.Sales.findOne({voucher: voucher, branchId: branchId,});
+            if (sale != null) {
+                data.valid = false;
+                data.message = 'Voucher already exists. Please input the other one.';
+                return data;
+            }
         }
-		}
     }
     var saleDate = $('#input-sale-date').val();
     if (saleDate == '') {
         data.valid = false;
         data.message = "Please input saleDate";
+        return data;
+    }
+    var locationId = $('#location-id').val();
+    if (locationId == '') {
+        data.valid = false;
+        data.message = "Please select location name.";
         return data;
     }
 
@@ -777,19 +785,23 @@ function getValidatedValues(fieldName, val, branchId, saleId) {
     if (product != null) {
         var defaultQuantity = $('#default-quantity').val() == "" ? 1 : parseInt($('#default-quantity').val());
         if (product.productType == "Stock") {
-            var sd = Pos.Collection.SaleDetails.findOne({productId: product._id, saleId: saleId});
+            var sd = Pos.Collection.SaleDetails.findOne({
+                productId: product._id,
+                saleId: saleId,
+                locationId: locationId
+            });
             if (sd != null) {
                 defaultQuantity = defaultQuantity + sd.quantity;
             }
-            var inventoryType = 1;
-            var inventory;
-            if (inventoryType == 1) {
-                inventory = Pos.Collection.FIFOInventory.findOne({
-                    branchId: branchId,
-                    productId: product._id
-                    //price: pd.price
-                }, {sort: {createdAt: -1}});
-            }
+
+            //---Open Inventory type block "FIFO Inventory"---
+            var inventory = Pos.Collection.FIFOInventory.findOne({
+                branchId: branchId,
+                productId: product._id,
+                locationId: locationId
+                //price: pd.price
+            }, {sort: {createdAt: -1}});
+            //---End Inventory type block "FIFO Inventory"---
             if (inventory != null) {
                 var remainQuantity = inventory.remainQty - defaultQuantity;
                 if (remainQuantity < 0) {
@@ -826,6 +838,7 @@ function getValidatedValues(fieldName, val, branchId, saleId) {
                 data.message = "Don't have product in stock.";
                 return data;
             }
+
         }
 
     } else {
@@ -841,8 +854,9 @@ function getValidatedValues(fieldName, val, branchId, saleId) {
         customerId: customerId,
         exchangeRateId: exchangeRate._id,
         description: $('#description').val(),
-        transactionType:transactionType,
-        voucher:voucher
+        transactionType: transactionType,
+        voucher: voucher,
+        locationId: locationId
     };
     data.product = product;
     return data;
@@ -869,6 +883,7 @@ function addOrUpdateProducts(branchId, saleId, isRetail, product, saleObj) {
         saleDetailObj.price = isRetail ? product.retailPrice : product.wholesalePrice;
         saleDetailObj.amount = (saleDetailObj.price * defaultQuantity) * (1 - defaultDiscount / 100);
         saleDetailObj.branchId = branchId;
+        saleDetailObj.locationId = saleObj.locationId;
         Meteor.call('insertSaleAndSaleDetail', saleObj, saleDetailObj, function (e, r) {
             $('#product-barcode').focus();
             if (e) {
@@ -897,6 +912,7 @@ function addOrUpdateProducts(branchId, saleId, isRetail, product, saleObj) {
             saleDetailObj.price = isRetail == true ? product.retailPrice : product.wholesalePrice;
             saleDetailObj.amount = (saleDetailObj.price * defaultQuantity) * (1 - defaultDiscount / 100);
             saleDetailObj.branchId = branchId;
+            saleDetailObj.locationId = saleObj.locationId;
             saleDetailObj.imei = [];
             Meteor.call('insertSaleDetails', saleDetailObj);
         } else {
@@ -1139,10 +1155,10 @@ function checkIsUpdate() {
     var saleDate = moment(sale.saleDate).format('MM/DD/YYYY hh:mm:ss A');
     var description = $('#description').val();
     var hasUpdate = false;
-    var voucher=$('#voucher').val();
+    var voucher = $('#voucher').val();
     if (date != saleDate || customer != sale.customerId ||
         staff != sale.staffId || transactionType != sale.transactionType ||
-        description != sale.description || voucher!=sale.voucher) {
+        description != sale.description || voucher != sale.voucher) {
         hasUpdate = true;
     }
     Session.set('hasUpdate', hasUpdate);

@@ -24,6 +24,10 @@ posRoutes.route('/checkout/:saleId?', {
     subscriptions: function (params, queryParams) {
         var branchId=Session.get('currentBranch');
         this.register(
+            'pos_location',
+            Meteor.subscribe('posLocation',{branchId:branchId})
+        );
+        this.register(
             'pos_sale',
             Meteor.subscribe('posSale',{branchId:branchId})
         );

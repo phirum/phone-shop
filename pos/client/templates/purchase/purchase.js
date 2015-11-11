@@ -22,6 +22,9 @@ Template.pos_purchase.onRendered(function () {
 });
 
 Template.pos_purchase.helpers({
+    locations:function(){
+        return Pos.Collection.Locations.find({branchId: Session.get('currentBranch')});
+    },
     transactionType: function () {
         return [
             {value: 'Purchase', name: 'Purchase'},
@@ -747,6 +750,7 @@ function addOrUpdateProducts(branchId, purchaseId, product, purchaseObj) {
         purchaseDetailObj.imei = [];
         purchaseDetailObj.amount = (purchaseDetailObj.price * defaultQuantity) * (1 - defaultDiscount / 100);
         purchaseDetailObj.branchId = branchId;
+        purchaseDetailObj.locationId=purchaseObj.locationId;
         Meteor.call('insertPurchaseAndPurchaseDetail', purchaseObj, purchaseDetailObj);
 
         // updatePurchaseSubTotal(newId);
@@ -758,7 +762,11 @@ function addOrUpdateProducts(branchId, purchaseId, product, purchaseObj) {
         $('#product-barcode').focus();
         //
     } else {
-        var purchaseDetail = Pos.Collection.PurchaseDetails.findOne({productId: product._id, purchaseId: purchaseId});
+        var purchaseDetail = Pos.Collection.PurchaseDetails.findOne({
+            productId: product._id,
+            purchaseId: purchaseId,
+            locationId: purchaseObj.locationId
+        });
         if (purchaseDetail == null) {
             var purchaseDetailObj = {};
             purchaseDetailObj._id = idGenerator.genWithPrefix(Pos.Collection.PurchaseDetails, purchaseId, 3);
@@ -770,6 +778,7 @@ function addOrUpdateProducts(branchId, purchaseId, product, purchaseObj) {
             purchaseDetailObj.imei = [];
             purchaseDetailObj.amount = (purchaseDetailObj.price * defaultQuantity) * (1 - defaultDiscount / 100);
             purchaseDetailObj.branchId = branchId;
+            purchaseDetailObj.locationId=purchaseObj.locationId;
             Meteor.call('insertPurchaseDetails', purchaseDetailObj);
         } else {
             var purchaseDetailSetObj = {};
@@ -971,6 +980,12 @@ function getValidatedValues(fieldName, val, branchId, saleId) {
         data.message = "Please input purchaseDate";
         return data;
     }
+    var locationId = $('#location-id').val();
+    if (locationId == '') {
+        data.valid = false;
+        data.message = "Please select location name.";
+        return data;
+    }
 
     var staffId = $('#staff-id').val();
     if (staffId == '') {
@@ -978,7 +993,6 @@ function getValidatedValues(fieldName, val, branchId, saleId) {
         data.message = "Please select staff name.";
         return data;
     }
-
     var supplierId = $('#supplier-id').val();
     if (supplierId == "") {
         data.valid = false;
@@ -991,7 +1005,6 @@ function getValidatedValues(fieldName, val, branchId, saleId) {
         data.message = "Please select transaction type.";
         return data;
     }
-
     var product;
     if (fieldName == 'id') {
         product = Pos.Collection.Products.findOne(val);
@@ -1024,7 +1037,8 @@ function getValidatedValues(fieldName, val, branchId, saleId) {
                     title: "Price should be changed."
                 });
         }
-    } else {
+    }
+    else {
         data.valid = false;
         data.message = "Can't find this Product";
         return data;
@@ -1037,7 +1051,8 @@ function getValidatedValues(fieldName, val, branchId, saleId) {
         supplierId: supplierId,
         exchangeRateId: exchangeRate._id,
         description: $('#description').val(),
-        transactionType: transactionType
+        transactionType: transactionType,
+        locationId:locationId
     };
     data.product = product;
     return data;
