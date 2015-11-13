@@ -167,7 +167,12 @@ Meteor.publish('posLocation', function (selector) {
         return Pos.Collection.Locations.find(selector, {removed: true});
     }
 });
-
+Meteor.publish('posLocationSetting', function (selector) {
+    if (this.userId) {
+        selector = selector == null ? {} : selector;
+        return Pos.Collection.LocationSettings.find(selector, {removed: true});
+    }
+});
 Meteor.publish('posOwedSale', function () {
     var lastWeek = new Date();
     var a=lastWeek.setDate(lastWeek.getDate() - 7);
