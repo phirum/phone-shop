@@ -22,9 +22,22 @@ Template.pos_checkout.onRendered(function () {
     }, 500);
 });
 Template.pos_checkout.helpers({
-    locations: function () {
-        return Pos.Collection.Locations.find({branchId: Session.get('currentBranch')});
+    location: function () {
+        var sale = Pos.Collection.Sales.findOne(FlowRouter.getParam('saleId'));
+        if (sale != null) {
+            return Pos.Collection.Locations.findOne(sale.locationId);
+        } else {
+            var locationSetting = Pos.Collection.LocationSettings.findOne();
+            if (locationSetting != null) {
+                return {_id: locationSetting.saleLocationId, name: locationSetting._location.name}
+            } else {
+                return {_id: '', name: 'N/A'}
+            }
+        }
     },
+    /*locations: function () {
+     return Pos.Collection.Locations.find({branchId: Session.get('currentBranch')});
+     },*/
     transactionType: function () {
         return [
             {value: 'Sale', name: 'Sale'},
@@ -749,7 +762,7 @@ function getValidatedValues(fieldName, val, branchId, saleId) {
         data.message = "Please input saleDate";
         return data;
     }
-    var locationId = $('#location-id').val();
+    var locationId = $('#location-id').data('id');
     if (locationId == '') {
         data.valid = false;
         data.message = "Please select location name.";

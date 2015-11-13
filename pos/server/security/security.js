@@ -29,7 +29,8 @@ Security.permit(['insert', 'update', 'remove']).collections([
     Pos.Collection.FIFOInventory,
     Pos.Collection.LIFOInventory,
     Pos.Collection.AverageInventory,
-    Pos.Collection.Locations
+    Pos.Collection.Locations,
+    Pos.Collection.LocationSettings
 ]).posIsAdmin().apply();
 
 Security.permit(['insert', 'update', 'remove']).collections([

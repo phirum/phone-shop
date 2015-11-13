@@ -50,6 +50,13 @@ var getCategoryList = function (selector, array, categories, alreadyUse) {
 };
 
 Pos.List = {
+    locations:function(){
+        var list = [{label: "(Select One)", value: ""}];
+        Pos.Collection.Locations.find({branchId:Session.get('currentBranch')}).forEach(function (obj) {
+            list.push({label: obj._id + ' : ' + obj.name, value: obj._id});
+        });
+        return list;
+    },
     gender: function () {
         return [
             {label: "(Select One)", value: ""},

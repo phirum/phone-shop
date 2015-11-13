@@ -23,12 +23,15 @@
                                 </span>
                             </div>
                             <label for="location-id"> <b>Locations <span style="color:red">*</span></b></label>
-                            <select id="location-id" class="form-control input-sm select-two">
-                                {{#each locations}}
+                            <!-- <select id="location-id" class="form-control input-sm select-two">
+                               {{#each locations}}
                                     <option value="{{_id}}"
                                             selected="{{#if compareTwoValue _id sale.locationId}}selected{{/if}}">{{name}}</option>
                                 {{/each}}
-                            </select>
+                            </select>-->
+                            <input type="text" id="location-id" class="form-control input-sm" value="{{location.name}}"
+                                   data-id="{{location._id}}" readonly>
+
 
                             <label for="staff-id"> <b>Staff <span style="color:red">*</span></b></label>
 
@@ -50,14 +53,15 @@
                                 <select id="customer-id" value="" class="form-control input-sm select-two">
                                     {{#each customers}}
                                         <option value="{{_id}}"
-                                                selected="{{#if compareTwoValue _id sale.customerId}}selected{{/if}}">{{_id}} | {{name}}</option>
+                                                selected="{{#if compareTwoValue _id sale.customerId}}selected{{/if}}">{{_id}}
+                                            | {{name}}</option>
                                     {{/each}}
                                 </select>
                                  <span class="input-group-addon customerInsertAddon">
                             <a> <i class="fa fa-plus"></i> </a>
                             </span>
                             </div>
-                             <label for="transaction-type"> <b>Transaction Type
+                            <label for="transaction-type"> <b>Transaction Type
                                 <span style="color:red">*</span></b></label>
 
                             <!--<div class="input-group select2-bootstrap-append">-->

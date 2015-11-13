@@ -2,7 +2,13 @@ Pos.Collection.LocationSettings = new Mongo.Collection("pos_locationSettings");
 Pos.Schema.LocationSettings = new SimpleSchema({
     saleLocationId: {
         type: String,
-        label: "Location for Sale"
+        label: "Location for Sale",
+        autoform: {
+            type: "select2",
+            options: function () {
+                return Pos.List.locations();
+            }
+        }
     },
     branchId: {
         type: String,
@@ -45,4 +51,4 @@ Pos.Schema.LocationSettings = new SimpleSchema({
         optional: true
     }*/
 });
-Pos.Collection.LocationSettings.attachSchema(Pos.Schema.Customers);
+Pos.Collection.LocationSettings.attachSchema(Pos.Schema.LocationSettings);

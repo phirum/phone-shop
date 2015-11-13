@@ -7,6 +7,10 @@ posRoutes.route('/locationSetting', {
             'pos_locationSetting',
             Meteor.subscribe('posLocationSetting')
         );
+        this.register(
+            'pos_location',
+            Meteor.subscribe('posLocation')
+        );
     },
     action: function (params, queryParams) {
         Layout.main('pos_locationSetting');

@@ -7,7 +7,7 @@ Pos.TabularTable.LocationSettings = new Tabular.Table({
             tmpl: Meteor.isClient && Template.pos_locationSettingAction
         },
         {data: "_id", title: "ID"},
-        {data: "location._name", title: "Location"}
+        {data: "_location.name", title: "Location"}
 
     ],
     order: [['1', 'desc']],

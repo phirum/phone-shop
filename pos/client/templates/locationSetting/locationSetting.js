@@ -4,7 +4,7 @@ var posLocationSettingUpdateTPL = Template.pos_locationSettingUpdate;
 var posLocationSettingShowTPL = Template.pos_locationSettingShow;
 
 posLocationSettingTPL.onRendered(function () {
-    createNewAlertify(['locationSetting','locationSettingShow']);
+    createNewAlertify(['locationSetting', 'locationSettingShow']);
 });
 posLocationSettingTPL.helpers({
     selector: function () {
@@ -15,11 +15,16 @@ posLocationSettingTPL.helpers({
 });
 posLocationSettingTPL.events({
     'click .insert': function (e, t) {
-        alertify.locationSetting(fa('plus', 'Add New LocationSetting'), renderTemplate(posLocationSettingInsertTPL)).maximize();
+        var locationSetting = Pos.Collection.LocationSettings.findOne({branchId: Session.get('currentBranch')});
+        if (locationSetting != null) {
+            alertify.warning('Location Setting is already had.');
+        } else {
+            alertify.locationSetting(fa('plus', 'Add New LocationSetting'), renderTemplate(posLocationSettingInsertTPL)).maximize();
+        }
     },
     'click .update': function (e, t) {
         var data = Pos.Collection.LocationSettings.findOne(this._id);
-        alertify.locationSetting(fa('pencil','Update Existing LocationSetting'),renderTemplate(posLocationSettingUpdateTPL, data)).maximize();
+        alertify.locationSetting(fa('pencil', 'Update Existing LocationSetting'), renderTemplate(posLocationSettingUpdateTPL, data)).maximize();
     },
     'click .remove': function (e, t) {
         var id = this._id;
@@ -43,9 +48,9 @@ posLocationSettingTPL.events({
             });
 
     },
-    'click .show': function (e, t) {
-        alertify.locationSettingShow(fa('eye','LocationSetting Detail'),renderTemplate(posLocationSettingShowTPL, this));
-    }
+    /* 'click .show': function (e, t) {
+     alertify.locationSettingShow(fa('eye','LocationSetting Detail'),renderTemplate(posLocationSettingShowTPL, this));
+     }*/
 });
 
 AutoForm.hooks({
@@ -62,11 +67,6 @@ AutoForm.hooks({
         },
         onError: function (formType, error) {
             alertify.error(error.message);
-        },
-        after: {
-            insert: function () {
-                $('select[name="gender"]').select2('val', '');
-            }
         }
     },
     pos_locationSettingUpdate: {
@@ -76,11 +76,6 @@ AutoForm.hooks({
         },
         onError: function (formType, error) {
             alertify.error(error.message);
-        },
-        after: {
-            update: function () {
-                $('select[name="gender"]').select2('val', '');
-            }
         }
     }
 });
