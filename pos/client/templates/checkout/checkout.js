@@ -589,11 +589,12 @@ Template.pos_checkout.events({
         var saleId = $('#sale-id').val();
         var branchId = Session.get('currentBranch');
         var sdId = this._id;
+        var locationId=$('#location-id').val();
         var set = {};
         set.quantity = quantity;
         set.amount = (this.price * quantity) * (1 - this.discount / 100);
 
-        var data = checkoutStock(this.productId, quantity, branchId, saleId);
+        var data = checkoutStock(this.productId, quantity, branchId, saleId,locationId);
         if (data.valid) {
             Meteor.call('updateSaleDetails', sdId, set);
         } else {
@@ -674,19 +675,18 @@ Template.pos_checkout.events({
         }
     }
 });
-function checkoutStock(productId, newQty, branchId, saleId) {
+function checkoutStock(productId, newQty, branchId, saleId,locationId) {
     var data = {};
     var product = Pos.Collection.Products.findOne(productId);
     if (product.productType == "Stock") {
-        var inventoryType = 1;
-        var inventory;
-        if (inventoryType == 1) {
-            inventory = Pos.Collection.FIFOInventory.findOne({
+        //---Open Inventory type block "FIFO Inventory"---
+        var inventory = Pos.Collection.FIFOInventory.findOne({
                 branchId: branchId,
-                productId: productId
+                productId: productId,
+                locationId:locationId
                 //price: pd.price
             }, {sort: {createdAt: -1}});
-        }
+
         if (inventory != null) {
             var remainQuantity = inventory.remainQty - newQty;
             if (remainQuantity < 0) {
@@ -762,7 +762,7 @@ function getValidatedValues(fieldName, val, branchId, saleId) {
         data.message = "Please input saleDate";
         return data;
     }
-    var locationId = $('#location-id').data('id');
+    var locationId = $('#location-id').val();
     if (locationId == '') {
         data.valid = false;
         data.message = "Please select location name.";
@@ -831,7 +831,8 @@ function getValidatedValues(fieldName, val, branchId, saleId) {
                 });
                 var otherSaleDetails = Pos.Collection.SaleDetails.find({
                     saleId: {$in: unSavedSaleId},
-                    productId: product._id
+                    productId: product._id,
+                    locationId:locationId
                 });
                 var otherQuantity = 0;
                 if (otherSaleDetails != null) {
