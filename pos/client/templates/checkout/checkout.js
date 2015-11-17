@@ -748,7 +748,7 @@ function getValidatedValues(fieldName, val, branchId, saleId) {
         return data;
     } else {
         if (saleId == '') {
-            var sale = Pos.Collection.Sales.findOne({voucher: voucher, branchId: branchId,});
+            var sale = Pos.Collection.Sales.findOne({voucher: voucher, branchId: branchId});
             if (sale != null) {
                 data.valid = false;
                 data.message = 'Voucher already exists. Please input the other one.';

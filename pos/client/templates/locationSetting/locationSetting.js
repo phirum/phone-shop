@@ -1,7 +1,7 @@
 var posLocationSettingTPL = Template.pos_locationSetting;
 var posLocationSettingInsertTPL = Template.pos_locationSettingInsert;
 var posLocationSettingUpdateTPL = Template.pos_locationSettingUpdate;
-var posLocationSettingShowTPL = Template.pos_locationSettingShow;
+//var posLocationSettingShowTPL = Template.pos_locationSettingShow;
 
 posLocationSettingTPL.onRendered(function () {
     createNewAlertify(['locationSetting', 'locationSettingShow']);
