@@ -15,37 +15,46 @@
                 </a>
                 <ul class="dropdown-menu" role="menu">
                     <li class="{{isActiveRoute name='pos.customer'}}"><a href="{{pathFor 'pos.customer'}}">
-                        <i class="fa fa-user"></i> Customer</a>
+                        Customer</a>
                     </li>
                     <li class="{{isActiveRoute name='pos.supplier'}}"><a href="{{pathFor 'pos.supplier'}}">
-                        <i class="fa fa-user"></i> Supplier</a>
+                         Supplier</a>
                     </li>
                     <li class="{{isActiveRoute name='pos.staff'}}"><a href="{{pathFor 'pos.staff'}}">
-                        <i class="fa fa-user"></i> Staff</a>
+                         Staff</a>
                     </li>
                     <li class="{{isActiveRoute name='pos.userStaff'}}"><a href="{{pathFor 'pos.userStaff'}}">
-                        <i class="fa fa-users"></i> User Staff Mapping</a>
+                         User Staff Mapping</a>
+                    </li>
+                    <li class="{{isActiveRoute name='pos.location'}}"><a href="{{pathFor 'pos.location'}}">
+                         Location</a>
+                    </li>
+                    <li class="{{isActiveRoute name='pos.locationSetting'}}"><a href="{{pathFor 'pos.locationSetting'}}">
+                         Location Setting</a>
+                    </li>
+                    <li class="{{isActiveRoute name='pos.locationTransfer'}}"><a href="{{pathFor 'pos.locationTransfer'}}">
+                         Location Transfer</a>
                     </li>
                     <li class="{{isActiveRoute name='pos.salePayment'}}"><a href="{{pathFor 'pos.salePayment'}}">
-                        <i class="fa fa-money"></i> Sale Payment</a>
+                         Sale Payment</a>
                     </li>
                     <li class="{{isActiveRoute name='pos.purchasePayment'}}"><a href="{{pathFor 'pos.purchasePayment'}}">
-                        <i class="fa fa-money"></i> Purchase Payment</a>
+                         Purchase Payment</a>
                     </li>
                     <!--<li class="{{isActiveRoute name='pos.adjustment'}}"><a href="{{pathFor 'pos.adjustment'}}">
-                        <i class="fa fa-list-alt"></i> Stock Adjustment</a>
+                         Stock Adjustment</a>
                     </li>-->
                     <li class="{{isActiveRoute name='pos.promotionQty'}}"><a href="{{pathFor 'pos.promotionQty'}}">
-                        <i class="fa fa-list-alt"></i> Promotion Quantity
+                         Promotion Quantity
                     </a>
                     </li>
                     <li class="{{isActiveRoute name='pos.promotionTotalAmount'}}"><a
                             href="{{pathFor 'pos.promotionTotalAmount'}}">
-                        <i class="fa fa-list-alt"></i> Promotion Total Amount</a>
+                         Promotion Total Amount</a>
                     </li>
                     <li class="{{isActiveRoute name='pos.promotionPercentage'}}"><a
                             href="{{pathFor 'pos.promotionPercentage'}}">
-                        <i class="fa fa-list-alt"></i> Promotion Percentage</a>
+                         Promotion Percentage</a>
                     </li>
                 </ul>
             </li>
@@ -55,17 +64,17 @@
                 </a>
                 <ul class="dropdown-menu" role="menu">
                     <li class="{{isActiveRoute name='pos.exchangeRate'}}"><a href="{{pathFor 'pos.exchangeRate'}}">
-                        <i class="fa fa-money"></i> Exchange</a>
+                         Exchange</a>
                     </li>
                     <li class="{{isActiveRoute name='pos.category'}}"><a href="{{pathFor 'pos.category'}}">
-                        <i class="fa fa-list-alt"></i> Category</a>
+                         Category</a>
                     </li>
                  <!--   <li class="{{isActiveRoute name='pos.subCategory'}}"><a href="{{pathFor 'pos.subCategory'}}">
-                        <i class="fa fa-list-alt"></i> Sub Category</a></li>-->
+                         Sub Category</a></li>-->
                     <li class="{{isActiveRoute name='pos.unit'}}"><a href="{{pathFor 'pos.unit'}}">
-                        <i class="fa fa-list-alt"></i> Unit</a></li>
+                         Unit</a></li>
                     <li class="{{isActiveRoute name='pos.product'}}"><a href="{{pathFor 'pos.product'}}">
-                        <i class="fa fa-list-alt"></i> Product</a>
+                         Product</a>
                     </li>
                 </ul>
             </li>
@@ -79,12 +88,12 @@
                         <i class="fa fa-eye"></i> Stock List</a>
                     </li>-->
                     <li class="{{isActiveRoute name='pos.saleList'}}"><a href="{{pathFor 'pos.saleList'}}">
-                        <i class="fa fa-eye"></i> Sale List
+                         Sale List
                         <span class="label label-danger">{{getPublishedCount 'owedSale'}}</span></a>
                     </li>
                     <li class="{{isActiveRoute name='pos.purchaseList'}}">
                         <a href="{{pathFor 'pos.purchaseList'}}">
-                        <i class="fa fa-eye"></i> Purchase List
+                         Purchase List
                         <!--<span class="label label-danger">{{getPublishedCount 'owedSale'}}</span>-->
                         </a>
                     </li>
@@ -94,7 +103,7 @@
             <!--
             <li class="{{isActiveRoute name='pos.purchase'}}">
                 <a href="{{pathFor 'pos.purchase'}}">
-                    <i class="fa fa-money"></i> Purchase</a>
+                     Purchase</a>
             </li>
              <li class="{{isActiveRoute name='pos.endOfProcess'}}"><a href="{{pathFor 'pos.endOfProcess'}}">
                     <i class="fa fa-save"></i> EOP</a>

@@ -46,6 +46,10 @@ posRoutes.route('/locationTransfer/:locationTransferId?', {
             'pos_averageInventory',
             Meteor.subscribe('posAverageInventory', {branchId: branchId})
         );
+        this.register(
+            'pos_location',
+            Meteor.subscribe('posLocation')
+        );
     },
     action: function (params, queryParams) {
         Layout.main('pos_locationTransfer');
@@ -98,8 +102,8 @@ posRoutes.route('/locationTransfer/print/:locationTransferId', {
             Meteor.subscribe('cpanel_company')
         );
         this.register(
-            'cpanel_payment',
-            Meteor.subscribe('posPayment')
+            'pos_location',
+            Meteor.subscribe('posLocation')
         );
     },
     action: function (params, queryParams) {

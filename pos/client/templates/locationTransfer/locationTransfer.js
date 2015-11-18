@@ -420,6 +420,13 @@ function locationTransferStock(productId, newQty, branchId, locationId) {
 
 function getValidatedValues(fieldName, val, branchId, locationTransferId) {
     var data = {};
+    var locationTransferDate = $('#input-locationTransfer-date').val();
+    if (locationTransferDate == '') {
+        data.valid = false;
+        data.message = "Please input Location Transfer Date";
+        return data;
+    }
+
     var fromLocationId = $('#from-location-id').val();
     if (fromLocationId == "") {
         data.valid = false;
