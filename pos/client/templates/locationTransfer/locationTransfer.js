@@ -417,7 +417,6 @@ function locationTransferStock(productId, newQty, branchId, locationId) {
     data.message = "Product is OK.";
     return data;
 }
-
 function getValidatedValues(fieldName, val, branchId, locationTransferId) {
     var data = {};
     var locationTransferDate = $('#input-locationTransfer-date').val();
