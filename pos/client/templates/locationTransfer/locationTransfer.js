@@ -47,9 +47,7 @@ Template.pos_locationTransfer.helpers({
     },
     locationTransfer: function () {
         var s = Pos.Collection.LocationTransfers.findOne(FlowRouter.getParam('locationTransferId'));
-        s.locationTransferDate = moment(s.locationTransferDate).format("DD-MM-YY, hh:mm:ss a");
-        s.subTotalFormatted = numeral(s.subTotal).format('0,0.00');
-        s.totalFormatted = numeral(s.total).format('0,0.00');
+       // s.locationTransferDate = moment(s.locationTransferDate).format("DD-MM-YY, hh:mm:ss a");
         return s;
     },
     locationTransferDetails: function () {
@@ -61,7 +59,7 @@ Template.pos_locationTransfer.helpers({
             /*var product = Pos.Collection.Products.findOne(sd.productId);
              var unit = Pos.Collection.Units.findOne(product.unitId).name;
              sd.productName = product.name + "(" + unit + ")";*/
-            sd.amountFormatted = numeral(sd.amount).format('0,0.00');
+            //sd.amountFormatted = numeral(sd.amount).format('0,0.00');
             //sd.order = pad(i, 2);
             sd.order = i;
             i++;
@@ -456,7 +454,7 @@ function getValidatedValues(fieldName, val, branchId, locationTransferId) {
             var sd = Pos.Collection.LocationTransferDetails.findOne({
                 productId: product._id,
                 branchId: branchId,
-                locationId: fromLocationId
+                LocationTransferId: locationTransferId
             });
             if (sd != null) {
                 defaultQuantity = defaultQuantity + sd.quantity;
@@ -528,6 +526,7 @@ function addOrUpdateProducts(branchId, locationTransferId, product, locationTran
     var defaultDiscount = $('#default-discount').val() == "" ? 0 : parseFloat($('#default-discount').val());
     if (locationTransferId == '') {
         locationTransferObj.status = "Unsaved";
+        locationTransferObj.branchId=branchId;
         var locationTransferDetailObj = {};
         locationTransferDetailObj.productId = product._id;
         locationTransferDetailObj.quantity = defaultQuantity;
