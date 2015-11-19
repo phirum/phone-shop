@@ -167,6 +167,19 @@ Meteor.publish('posLocation', function (selector) {
         return Pos.Collection.Locations.find(selector, {removed: true});
     }
 });
+Meteor.publish('posLocationTransfer', function (selector) {
+    if (this.userId) {
+        selector = selector == null ? {} : selector;
+        return Pos.Collection.LocationTransfers.find(selector, {removed: true});
+    }
+});
+Meteor.publish('posLocationTransferDetail', function (selector) {
+    if (this.userId) {
+        selector = selector == null ? {} : selector;
+        return Pos.Collection.LocationTransferDetails.find(selector, {removed: true});
+    }
+});
+
 Meteor.publish('posLocationSetting', function (selector) {
     if (this.userId) {
         selector = selector == null ? {} : selector;

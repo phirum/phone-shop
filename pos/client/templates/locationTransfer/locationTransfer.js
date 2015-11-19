@@ -19,6 +19,15 @@ Template.pos_locationTransfer.onRendered(function () {
     }, 500);
 });
 Template.pos_locationTransfer.helpers({
+    imeis: function () {
+        var locationTransferDetailId = Session.get('locationTransferDetailId');
+        if (locationTransferDetailId != null) {
+            var sd = Pos.Collection.LocationTransferDetails.findOne(locationTransferDetailId);
+            return (sd == null || sd.imei == null) ? [] : sd.imei;
+        } else {
+            return [];
+        }
+    },
     locations: function () {
         return Pos.Collection.Locations.find({branchId: Session.get('currentBranch')});
     },
@@ -100,6 +109,60 @@ Template.pos_locationTransfer.helpers({
     }
 });
 Template.pos_locationTransfer.events({
+    'keyup #input-imei': function (e) {
+        if (e.which == 13) {
+            var branchId = Session.get('currentBranch');
+            var imei = $(e.currentTarget).val().trim();
+            if (imei == "") {
+                return;
+            }
+            var locationTransferDetailId = Session.get('locationTransferDetailId');
+            var locationTransferDetail = Pos.Collection.LocationTransferDetails.findOne(locationTransferDetailId);
+            var inventoryType = 1;
+            var inventory;
+            if (inventoryType == 1) {
+                inventory = Pos.Collection.FIFOInventory.findOne({
+                    branchId: branchId,
+                    productId: locationTransferDetail.productId
+                    //price: pd.price
+                }, {sort: {createdAt: -1}});
+            }
+            if (inventory != null) {
+                if (inventory.imei == null || inventory.imei.indexOf(imei) == -1) {
+                    alertify.warning("Can't find this IMEI.");
+                    return;
+                }
+            } else {
+                alertify.error("Product is out of stock.");
+                return;
+            }
+            var obj = {};
+            var imeis = locationTransferDetail.imei == null ? [] : locationTransferDetail.imei;
+            if (imeis.indexOf(imei) != -1) {
+                alertify.warning('IMEI is already exist.');
+                return;
+            } else if (locationTransferDetail.imei.count() == locationTransferDetail.quantity) {
+                alertify.warning("Number of IMEI can't greater than Quantity.");
+                return;
+            } else {
+                imeis.push(imei);
+            }
+            obj.imei = imeis;
+            Meteor.call('updateLocationTransferDetails', locationTransferDetailId, obj, function (er, re) {
+                if (er) {
+                    alertify.error(er.message);
+                } else {
+                    $(e.currentTarget).val('');
+                    $(e.currentTarget).focus();
+                }
+            });
+        }
+    },
+    'click .btn-imei': function () {
+        Session.set('locationTransferDetailId', this._id);
+        $('#input-imei').val('');
+        $('#imei').modal('show');
+    },
     'click .btn-remove-imei': function (e) {
         var locationTransferDetailId = Session.get('locationTransferDetailId');
         var thisBtn = $(e.currentTarget);
@@ -307,11 +370,11 @@ Template.pos_locationTransfer.events({
     },
     'click .btn-remove': function () {
         Pos.Collection.LocationTransferDetails.remove(this._id);
-        var sd = Pos.Collection.LocationTransferDetails.find({
+        var ltd = Pos.Collection.LocationTransferDetails.find({
             locationTransferId: FlowRouter.getParam('locationTransferId'),
             isPromotion: {$ne: true}
         });
-        if (sd.count() == 0) {
+        if (ltd.count() == 0) {
             Pos.Collection.LocationTransfers.remove(FlowRouter.getParam('locationTransferId'));
             FlowRouter.go('pos.locationTransfer');
             prepareForm();
@@ -331,7 +394,6 @@ Template.pos_locationTransfer.events({
     'change #product-id': function () {
         var id = $('#product-id').val();
         if (id == "") return;
-        var isRetail = Session.get('isRetail');
         var locationTransferId = $('#locationTransfer-id').val();
         var branchId = Session.get('currentBranch');
         var data = getValidatedValues('id', id, branchId, locationTransferId);
@@ -348,12 +410,11 @@ Template.pos_locationTransfer.events({
         var charCode = e.which;
         if (e.which == 13) {
             var barcode = $('#product-barcode').val();
-            var isRetail = Session.get('isRetail');
             var locationTransferId = $('#locationTransfer-id').val();
             var branchId = Session.get('currentBranch');
             var data = getValidatedValues('barcode', barcode, branchId, locationTransferId);
             if (data.valid) {
-                addOrUpdateProducts(branchId, locationTransferId, isRetail, data.product, data.locationTransferObj);
+                addOrUpdateProducts(branchId, locationTransferId, data.product, data.locationTransferObj);
             } else {
                 alertify.warning(data.message);
             }
@@ -381,20 +442,20 @@ function locationTransferStock(productId, newQty, branchId, locationId) {
                 data.message = 'Product is out of stock. Quantity in stock is "' + inventory.remainQty + '".';
                 return data;
             }
-            var unSavedSaleId = Pos.Collection.Sales.find({
+            var unSavedLocationTransferId = Pos.Collection.LocationTransfers.find({
                 status: "Unsaved",
                 branchId: Session.get('currentBranch'),
-                _id: {$ne: saleId}
+                _id: {$ne: locationTransferId}
             }).map(function (s) {
                 return s._id;
             });
-            var otherSaleDetails = Pos.Collection.SaleDetails.find({
-                saleId: {$in: unSavedSaleId},
+            var otherLocationTransferDetails = Pos.Collection.LocationTransferDetails.find({
+                locationTransferId: {$in: unSavedLocationTransferId},
                 productId: product._id
             });
             var otherQuantity = 0;
-            if (otherSaleDetails != null) {
-                otherSaleDetails.forEach(function (sd) {
+            if (otherLocationTransferDetails != null) {
+                otherLocationTransferDetails.forEach(function (sd) {
                     otherQuantity += sd.quantity;
                 });
             }
@@ -402,7 +463,7 @@ function locationTransferStock(productId, newQty, branchId, locationId) {
             if (remainQuantity < 0) {
                 data.valid = false;
                 data.message = 'Product is out of stock. Quantity in stock is "' +
-                    inventory.remainQty + '". And quantity on sale of other seller is "' + otherQuantity + '".';
+                    inventory.remainQty + '". And quantity on locationTransfer of other seller is "' + otherQuantity + '".';
                 return data;
             }
         } else {
@@ -579,6 +640,7 @@ function pay(locationTransferId) {
     });
 }
 function checkIsUpdate() {
+    debugger;
     var locationTransferId = $('#locationTransfer-id').val();
     if (locationTransferId == "") {
         Session.set('hasLocationTransferUpdate', false);

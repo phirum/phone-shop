@@ -4,11 +4,11 @@ posRoutes.route('/locationTransfer/:locationTransferId?', {
         var branchId = Session.get('currentBranch');
         this.register(
             'pos_locationTransfer',
-            Meteor.subscribe('posSale', {branchId: branchId})
+            Meteor.subscribe('posLocationTransfer', {branchId: branchId})
         );
         this.register(
             'pos_locationTransferDetail',
-            Meteor.subscribe('posSaleDetail', {branchId: branchId})
+            Meteor.subscribe('posLocationTransferDetail', {branchId: branchId})
         );
         this.register(
             'pos_product',
@@ -67,11 +67,11 @@ posRoutes.route('/locationTransfer/print/:locationTransferId', {
     subscriptions: function (params, queryParams) {
         this.register(
             'pos_locationTransfer',
-            Meteor.subscribe('posSale')
+            Meteor.subscribe('posLocationTransfer')
         );
         this.register(
             'pos_locationTransferDetail',
-            Meteor.subscribe('posSaleDetail')
+            Meteor.subscribe('posLocationTransferDetail')
         );
         this.register(
             'pos_product',

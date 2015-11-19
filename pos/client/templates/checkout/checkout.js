@@ -177,7 +177,6 @@ Template.pos_checkout.helpers({
         }
     }
 });
-
 Template.pos_checkout.events({
     'keyup #voucher': function () {
         checkIsUpdate();
@@ -589,12 +588,12 @@ Template.pos_checkout.events({
         var saleId = $('#sale-id').val();
         var branchId = Session.get('currentBranch');
         var sdId = this._id;
-        var locationId=$('#location-id').val();
+        var locationId = $('#location-id').val();
         var set = {};
         set.quantity = quantity;
         set.amount = (this.price * quantity) * (1 - this.discount / 100);
 
-        var data = checkoutStock(this.productId, quantity, branchId, saleId,locationId);
+        var data = checkoutStock(this.productId, quantity, branchId, saleId, locationId);
         if (data.valid) {
             Meteor.call('updateSaleDetails', sdId, set);
         } else {
@@ -675,17 +674,17 @@ Template.pos_checkout.events({
         }
     }
 });
-function checkoutStock(productId, newQty, branchId, saleId,locationId) {
+function checkoutStock(productId, newQty, branchId, saleId, locationId) {
     var data = {};
     var product = Pos.Collection.Products.findOne(productId);
     if (product.productType == "Stock") {
         //---Open Inventory type block "FIFO Inventory"---
         var inventory = Pos.Collection.FIFOInventory.findOne({
-                branchId: branchId,
-                productId: productId,
-                locationId:locationId
-                //price: pd.price
-            }, {sort: {createdAt: -1}});
+            branchId: branchId,
+            productId: productId,
+            locationId: locationId
+            //price: pd.price
+        }, {sort: {createdAt: -1}});
 
         if (inventory != null) {
             var remainQuantity = inventory.remainQty - newQty;
@@ -832,7 +831,7 @@ function getValidatedValues(fieldName, val, branchId, saleId) {
                 var otherSaleDetails = Pos.Collection.SaleDetails.find({
                     saleId: {$in: unSavedSaleId},
                     productId: product._id,
-                    locationId:locationId
+                    locationId: locationId
                 });
                 var otherQuantity = 0;
                 if (otherSaleDetails != null) {
