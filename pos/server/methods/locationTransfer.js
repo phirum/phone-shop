@@ -4,7 +4,6 @@ Meteor.methods({
         var todayDate = moment().format('YYYYMMDD');
         console.log(todayDate);
         var prefix = locationTransfer.branchId + "-" + todayDate;
-        console.log(prefix);
         var locationTransferId= idGenerator.genWithPrefix(Pos.Collection.LocationTransfers, prefix, 4);
         locationTransfer._id=locationTransferId;
         Pos.Collection.LocationTransfers.insert(locationTransfer);

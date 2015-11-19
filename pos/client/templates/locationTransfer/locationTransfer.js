@@ -293,11 +293,6 @@ Template.pos_locationTransfer.events({
             }
         });
     },
-    'click #btn-pay': function () {
-        if ($('#locationTransfer-id').val() == "") return;
-        $('#payment').modal('show');
-        clearDataFormPayment();
-    },
     'click #cancel-locationTransfer': function () {
         var locationTransferId = $('#locationTransfer-id').val();
         if (locationTransferId == "") return;

@@ -8,6 +8,11 @@ Pos.Collection.PurchaseDetails.after.remove(function (userId, doc) {
     }
 });
 Pos.Collection.Purchases.after.update(function (userId, doc, fieldNames, modifier, options) {
+    console.log("From Purchase after.update hook:");
+    console.log(doc);
+    console.log("Modifier");
+    console.log(modifier);
+
     updatePurchaseTotal(doc._id);
 });
 
