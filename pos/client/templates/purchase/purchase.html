@@ -26,7 +26,7 @@
                             <select id="location-id" class="form-control input-sm select-two">
                                 {{#each locations}}
                                     <option value="{{_id}}"
-                                            selected="{{#if compareTwoValue _id sale.locationId}}selected{{/if}}">{{name}}</option>
+                                            selected="{{#if compareTwoValue _id purchase.locationId}}selected{{/if}}">{{name}}</option>
                                 {{/each}}
                             </select>
                             <label for="staff-id"> <b>Staff <span style="color:red">*</span></b></label>

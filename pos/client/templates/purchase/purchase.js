@@ -20,9 +20,8 @@ Template.pos_purchase.onRendered(function () {
 
     }, 500);
 });
-
 Template.pos_purchase.helpers({
-    locations:function(){
+    locations: function () {
         return Pos.Collection.Locations.find({branchId: Session.get('currentBranch')});
     },
     transactionType: function () {
@@ -157,8 +156,10 @@ Template.pos_purchase.helpers({
         }
     }
 });
-
 Template.pos_purchase.events({
+    'change #location-id': function () {
+        checkPurchaseIsUpdate();
+    },
     'change #transaction-type': function () {
         checkPurchaseIsUpdate();
     },
@@ -218,6 +219,7 @@ Template.pos_purchase.events({
         var purchaseId = $(e.currentTarget).attr('data-id');
         var purchase = Pos.Collection.Purchases.findOne(purchaseId);
         Session.set('purchaseHasUpdate', false);
+        $('#location-id').select2('val', purchase.locationId);
         $('#supplier-id').select2('val', purchase.supplierId);
         $('#staff-id').select2('val', purchase.staffId);
         $('#input-purchase-date').val(moment(purchase.purchaseDate).format('MM/DD/YYYY hh:mm:ss A'));
@@ -230,12 +232,14 @@ Template.pos_purchase.events({
         var date = $('#input-purchase-date').val();
         var transactionType = $('#transaction-type').val();
         var description = $('#description').val();
+        var locationId = $('#location-id').val();
         var set = {};
         set.supplierId = supplier;
         set.staffId = staff;
         set.purchaseDate = moment(date).toDate();
         set.transactionType = transactionType;
         set.description = description;
+        set.locationId = locationId;
         Meteor.call('updatePurchase', purchaseId, set, function (error, result) {
             if (error)alertify.error(error.message);
         });
@@ -443,7 +447,6 @@ Template.pos_purchase.events({
         }
         return !(charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57));
     },
-
     'change .price': function (e) {
         var val = $(e.currentTarget).val();
         var numericReg = /^\d*[0-9](|.\d*[0-9]|,\d*[0-9])?$/;
@@ -693,8 +696,6 @@ Template.pos_purchase.events({
         }
     }
 });
-
-
 //function addOrUpdateProducts(purchaseId, product) {
 function addOrUpdateProducts(branchId, purchaseId, product, purchaseObj) {
     /*   var branchId = Session.get('currentBranch');
@@ -750,7 +751,7 @@ function addOrUpdateProducts(branchId, purchaseId, product, purchaseObj) {
         purchaseDetailObj.imei = [];
         purchaseDetailObj.amount = (purchaseDetailObj.price * defaultQuantity) * (1 - defaultDiscount / 100);
         purchaseDetailObj.branchId = branchId;
-        purchaseDetailObj.locationId=purchaseObj.locationId;
+        purchaseDetailObj.locationId = purchaseObj.locationId;
         Meteor.call('insertPurchaseAndPurchaseDetail', purchaseObj, purchaseDetailObj);
 
         // updatePurchaseSubTotal(newId);
@@ -778,7 +779,7 @@ function addOrUpdateProducts(branchId, purchaseId, product, purchaseObj) {
             purchaseDetailObj.imei = [];
             purchaseDetailObj.amount = (purchaseDetailObj.price * defaultQuantity) * (1 - defaultDiscount / 100);
             purchaseDetailObj.branchId = branchId;
-            purchaseDetailObj.locationId=purchaseObj.locationId;
+            purchaseDetailObj.locationId = purchaseObj.locationId;
             Meteor.call('insertPurchaseDetails', purchaseDetailObj);
         } else {
             var purchaseDetailSetObj = {};
@@ -816,7 +817,6 @@ function clearDataFormPayment() {
     $('.pay-amount').val('');
     $('.return-amount').val('');
 }
-
 function calculatePayment() {
     var total = 0;
     var dueTotal = parseFloat($('#due-grand-total').text().trim());
@@ -845,7 +845,6 @@ function calculatePayment() {
         }
     }
 }
-
 function pay(purchaseId) {
     var branchId = Session.get('currentBranch');
     var obj = {};
@@ -911,7 +910,6 @@ function pay(purchaseId) {
      Meteor.call('updatePurchase', purchaseId, purchaseUpdateObj);
      */
 }
-
 function checkPurchaseIsUpdate() {
     var purchaseId = $('#purchase-id').val();
     if (purchaseId == "") {
@@ -923,12 +921,13 @@ function checkPurchaseIsUpdate() {
     var staff = $('#staff-id').val();
     var date = $('#input-purchase-date').val();
     var transactionType = $('#transaction-type').val();
+    var locationId = $('#location-id').val();
     var purchaseDate = moment(purchase.purchaseDate).format('MM/DD/YYYY hh:mm:ss A');
     var hasUpdate = false;
     var description = $('#description').val();
     if (date != purchaseDate || supplier != purchase.supplierId ||
         staff != purchase.staffId || transactionType != purchase.transactionType ||
-        description != purchase.description) {
+        description != purchase.description || locationId != purchase.locationId) {
         hasUpdate = true;
     }
     Session.set('purchaseHasUpdate', hasUpdate);
@@ -937,6 +936,7 @@ function preparePurchaseForm() {
     setTimeout(function () {
         Session.set('purchaseHasUpdate', false);
         $('#input-purchase-date').val('');
+        $('#location-id').select2();
         $('#staff-id').select2();
         $('#supplier-id').select2();
         $('#product-barcode').focus();
@@ -944,7 +944,6 @@ function preparePurchaseForm() {
         $('#transaction-type').select2('val', 'Purchase');
     }, 300);
 }
-
 function subtractArray(src, filt) {
     var temp = {}, i, result = [];
     // load contents of filt into an object
@@ -961,7 +960,6 @@ function subtractArray(src, filt) {
     }
     return (result);
 }
-
 function getValidatedValues(fieldName, val, branchId, saleId) {
     var data = {};
     var id = Cpanel.Collection.Setting.findOne().baseCurrency;
@@ -1052,7 +1050,7 @@ function getValidatedValues(fieldName, val, branchId, saleId) {
         exchangeRateId: exchangeRate._id,
         description: $('#description').val(),
         transactionType: transactionType,
-        locationId:locationId
+        locationId: locationId
     };
     data.product = product;
     return data;

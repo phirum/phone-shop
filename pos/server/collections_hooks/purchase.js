@@ -7,12 +7,15 @@ Pos.Collection.PurchaseDetails.after.remove(function (userId, doc) {
         updatePurchaseTotal(doc.purchaseId);
     }
 });
+Pos.Collection.Purchases.before.update(function (userId, doc, fieldNames, modifier, options) {
+    if (modifier.$set.locationId != null && modifier.$set.locationId != doc.locationId) {
+        Pos.Collection.PurchaseDetails.update(
+            {purchaseId: doc._id},
+            {$set: {locationId: modifier.$set.locationId}},
+            {multi: true});
+    }
+});
 Pos.Collection.Purchases.after.update(function (userId, doc, fieldNames, modifier, options) {
-    console.log("From Purchase after.update hook:");
-    console.log(doc);
-    console.log("Modifier");
-    console.log(modifier);
-
     updatePurchaseTotal(doc._id);
 });
 
@@ -31,24 +34,27 @@ Pos.Collection.Purchases.after.remove(function (userId, doc) {
 });
 
 function updatePurchaseTotal(purchaseId) {
-    //var discount = Pos.Collection.Purchases.findOne(purchaseId).discountAmount;
-    var discount = Pos.Collection.Purchases.findOne(purchaseId).discount;
-    var purchaseSubTotal = 0;
-    var purchaseDetails = Pos.Collection.PurchaseDetails.find({purchaseId: purchaseId});
-    purchaseDetails.forEach(function (purchaseDetail) {
-        purchaseSubTotal += parseFloat(purchaseDetail.amount);
+    Meteor.defer(function () {
+        //var discount = Pos.Collection.Purchases.findOne(purchaseId).discountAmount;
+        var discount = Pos.Collection.Purchases.findOne(purchaseId).discount;
+        var purchaseSubTotal = 0;
+        var purchaseDetails = Pos.Collection.PurchaseDetails.find({purchaseId: purchaseId});
+        purchaseDetails.forEach(function (purchaseDetail) {
+            purchaseSubTotal += parseFloat(purchaseDetail.amount);
+        });
+        var baseCurrencyId = Cpanel.Collection.Setting.findOne().baseCurrency;
+        //var total = purchaseSubTotal - discount;
+        var total = purchaseSubTotal * (1 - discount / 100);
+        if (baseCurrencyId == "KHR") {
+            total = roundRielCurrency(total);
+        }
+        var set = {};
+        set.subTotal = purchaseSubTotal;
+        set.total = total;
+        set.owedAmount = total;
+        //set.discountAmount=purchaseSubTotal-total;
+        Pos.Collection.Purchases.direct.update(purchaseId, {$set: set});
+        //Meteor.call('updatePurchase', purchaseId, set);
     });
-    var baseCurrencyId = Cpanel.Collection.Setting.findOne().baseCurrency;
-    //var total = purchaseSubTotal - discount;
-    var total = purchaseSubTotal * (1 - discount / 100);
-    if (baseCurrencyId == "KHR") {
-        total = roundRielCurrency(total);
-    }
-    var set = {};
-    set.subTotal = purchaseSubTotal;
-    set.total = total;
-    set.owedAmount = total;
-    //set.discountAmount=purchaseSubTotal-total;
-    Pos.Collection.Purchases.direct.update(purchaseId, {$set: set});
-    //Meteor.call('updatePurchase', purchaseId, set);
+
 }

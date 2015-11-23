@@ -3,7 +3,7 @@ Pos.Schema.Locations = new SimpleSchema({
     name: {
         type: String,
         label: "Name",
-        unique: true,
+        //unique: true,
         max: 200
     },
     abbreviation: {
