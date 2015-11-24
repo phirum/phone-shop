@@ -1,4 +1,5 @@
 Session.setDefault('hasLocationTransferUpdate', false);
+Session.setDefault('fromLocationId', '');
 Template.pos_locationTransfer.onRendered(function () {
     createNewAlertify(["location", "userStaff"]);
     $('#locationTransfer-date').datetimepicker({
@@ -31,6 +32,12 @@ Template.pos_locationTransfer.helpers({
     locations: function () {
         return Pos.Collection.Locations.find({branchId: Session.get('currentBranch')});
     },
+    toLocations: function () {
+        return Pos.Collection.Locations.find({
+            branchId: Session.get('currentBranch'),
+            _id: {$ne: Session.get('fromLocationId')}
+        });
+    },
     hasLocationTransferUpdate: function () {
         var hasLocationTransferUpdate = Session.get('hasLocationTransferUpdate');
         if (hasLocationTransferUpdate != null && hasLocationTransferUpdate != "null") {
@@ -56,7 +63,7 @@ Template.pos_locationTransfer.helpers({
     },
     locationTransfer: function () {
         var s = Pos.Collection.LocationTransfers.findOne(FlowRouter.getParam('locationTransferId'));
-       // s.locationTransferDate = moment(s.locationTransferDate).format("DD-MM-YY, hh:mm:ss a");
+        // s.locationTransferDate = moment(s.locationTransferDate).format("DD-MM-YY, hh:mm:ss a");
         return s;
     },
     locationTransferDetails: function () {
@@ -177,7 +184,8 @@ Template.pos_locationTransfer.events({
         var locationTransferId = $(e.currentTarget).attr('data-id');
         var locationTransfer = Pos.Collection.LocationTransfers.findOne(locationTransferId);
         Session.set('hasLocationTransferUpdate', false);
-        $('#customer-id').select2('val', locationTransfer.customerId);
+        $('#from-location-id').select2('val', locationTransfer.fromLocationId);
+        $('#to-location-id').select2('val', locationTransfer.toLocationId);
         $('#staff-id').select2('val', locationTransfer.staffId);
         $('#input-locationTransfer-date').val(moment(locationTransfer.locationTransferDate).format('MM/DD/YYYY hh:mm:ss A'));
     },
@@ -217,7 +225,9 @@ Template.pos_locationTransfer.events({
     'blur #input-locationTransfer-date': function () {
         checkIsUpdate();
     },
-    'change #from-location-id': function () {
+    'change #from-location-id': function (e) {
+        Session.set('fromLocationId', $(e.currentTarget).val());
+        $('#to-location-id').select('val', '');
         checkIsUpdate();
     },
     'change #to-location-id': function () {
@@ -286,7 +296,7 @@ Template.pos_locationTransfer.events({
             }
             else {
                 var locationTransferObj = {};
-                locationTransferObj.status = 'Owed';
+                locationTransferObj.status = 'Saved';
                 Meteor.call('updateLocationTransfer', locationTransferId, locationTransferObj);
                 alertify.success('LocationTransfer is saved successfully');
                 FlowRouter.go('pos.locationTransfer');
@@ -347,16 +357,16 @@ Template.pos_locationTransfer.events({
             return;
         }
 
-        var locationId = $('#from-location-id').val();
+        var locationId = this.fromLocationId;//$('#from-location-id').val();
         var branchId = Session.get('currentBranch');
-        var sdId = this._id;
+        var ltId = this._id;
         var set = {};
         set.quantity = quantity;
-        set.amount = (this.price * quantity) * (1 - this.discount / 100);
+        //set.amount = (this.price * quantity) * (1 - this.discount / 100);
 
-        var data = locationTransferStock(this.productId, quantity, branchId, locationId);
+        var data = locationTransferStock(this.productId, quantity, branchId, ltId, locationId);
         if (data.valid) {
-            Meteor.call('updateLocationTransferDetails', sdId, set);
+            Meteor.call('updateLocationTransferDetails', ltId, set);
         } else {
             alertify.warning(data.message);
             $(e.currentTarget).val(firstQuantity);
@@ -419,7 +429,7 @@ Template.pos_locationTransfer.events({
         }
     }
 });
-function locationTransferStock(productId, newQty, branchId, locationId) {
+function locationTransferStock(productId, newQty, branchId, locationTransferId, locationId) {
     var data = {};
     var product = Pos.Collection.Products.findOne(productId);
     if (product.productType == "Stock") {
@@ -582,13 +592,14 @@ function addOrUpdateProducts(branchId, locationTransferId, product, locationTran
     var defaultDiscount = $('#default-discount').val() == "" ? 0 : parseFloat($('#default-discount').val());
     if (locationTransferId == '') {
         locationTransferObj.status = "Unsaved";
-        locationTransferObj.branchId=branchId;
+        locationTransferObj.branchId = branchId;
         var locationTransferDetailObj = {};
         locationTransferDetailObj.productId = product._id;
         locationTransferDetailObj.quantity = defaultQuantity;
         locationTransferDetailObj.branchId = branchId;
         locationTransferDetailObj.fromLocationId = locationTransferObj.fromLocationId;
         locationTransferDetailObj.toLocationId = locationTransferObj.toLocationId;
+        locationTransferDetailObj.imei = [];
         Meteor.call('insertLocationTransferAndLocationTransferDetail', locationTransferObj, locationTransferDetailObj, function (e, r) {
             $('#product-barcode').focus();
             if (e) {
@@ -615,6 +626,7 @@ function addOrUpdateProducts(branchId, locationTransferId, product, locationTran
             locationTransferDetailObj.branchId = branchId;
             locationTransferDetailObj.fromLocationId = locationTransferObj.fromLocationId;
             locationTransferDetailObj.toLocationId = locationTransferObj.toLocationId;
+            locationTransferDetailObj.imei = [];
             Meteor.call('insertLocationTransferDetails', locationTransferDetailObj);
         } else {
             var set = {};
@@ -631,7 +643,16 @@ function addOrUpdateProducts(branchId, locationTransferId, product, locationTran
 function pay(locationTransferId) {
     var branchId = Session.get('currentBranch');
     Meteor.call('locationTransferManageStock', locationTransferId, branchId, function (er, re) {
-        if (er) alertify(er.message);
+        if (er) {
+            alertify(er.message);
+        }
+        else {
+            var locationTransferObj = {};
+            locationTransferObj.status = 'Saved';
+            Meteor.call('updateLocationTransfer', locationTransferId, locationTransferObj);
+            alertify.success('LocationTransfer is saved successfully');
+            FlowRouter.go('pos.locationTransfer');
+        }
     });
 }
 function checkIsUpdate() {
@@ -658,11 +679,11 @@ function prepareForm() {
     setTimeout(function () {
         Session.set('hasLocationTransferUpdate', false);
         //$('#input-locationTransfer-date').val('');
-        $('#staff-id').select2('val', '');
-        $('#from-location-id').select2('val', '');
+        $('#staff-id').select2();
+        $('#from-location-id').select2();
         $('#product-barcode').focus();
         $('#product-id').select2('val', '');
-        $('#to-location-id').select2('val', '');
+        $('#to-location-id').select2();
     }, 200);
 }
 function subtractArray(src, filt) {

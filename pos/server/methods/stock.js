@@ -1,57 +1,57 @@
 /*function fifoInventoryInsert(branchId, pd, prefix) {
-//FIFO find the last record that has the same price
-    var inventory = Pos.Collection.FIFOInventory.findOne({
-        branchId: branchId,
-        productId: pd.productId
-        //price: pd.price
-    }, {sort: {createdAt: -1}});
-    if (inventory == null) {
-        var inventoryObj = {};
-        inventoryObj._id = idGenerator.genWithPrefix(Pos.Collection.FIFOInventory, prefix, 13);
-        inventoryObj.branchId = branchId;
-        inventoryObj.productId = pd.productId;
-        inventoryObj.quantity = pd.quantity;
-        inventoryObj.price = pd.price;
-        inventoryObj.remainQty = pd.quantity;
-        inventoryObj.isSale = false;
-        inventoryObj.imei = pd.imei;
-        Pos.Collection.FIFOInventory.insert(inventoryObj);
-    }
-    else if (inventory.price == pd.price) {
-        var inventorySet = {};
-        inventorySet.quantity = pd.quantity + inventory.quantity;
-        inventorySet.remainQty = inventory.remainQty + pd.quantity;
-        inventorySet.isSale = false;
-        inventorySet.imei = (inventory.imei).concat(pd.imei);
-        Pos.Collection.FIFOInventory.update(inventory._id, {$set: inventorySet});
+ //FIFO find the last record that has the same price
+ var inventory = Pos.Collection.FIFOInventory.findOne({
+ branchId: branchId,
+ productId: pd.productId
+ //price: pd.price
+ }, {sort: {createdAt: -1}});
+ if (inventory == null) {
+ var inventoryObj = {};
+ inventoryObj._id = idGenerator.genWithPrefix(Pos.Collection.FIFOInventory, prefix, 13);
+ inventoryObj.branchId = branchId;
+ inventoryObj.productId = pd.productId;
+ inventoryObj.quantity = pd.quantity;
+ inventoryObj.price = pd.price;
+ inventoryObj.remainQty = pd.quantity;
+ inventoryObj.isSale = false;
+ inventoryObj.imei = pd.imei;
+ Pos.Collection.FIFOInventory.insert(inventoryObj);
+ }
+ else if (inventory.price == pd.price) {
+ var inventorySet = {};
+ inventorySet.quantity = pd.quantity + inventory.quantity;
+ inventorySet.remainQty = inventory.remainQty + pd.quantity;
+ inventorySet.isSale = false;
+ inventorySet.imei = (inventory.imei).concat(pd.imei);
+ Pos.Collection.FIFOInventory.update(inventory._id, {$set: inventorySet});
 
-    }
-    else {
-        var nextInventory = {};
-        nextInventory._id = idGenerator.genWithPrefix(Pos.Collection.FIFOInventory, prefix, 13);
-        nextInventory.branchId = branchId;
-        nextInventory.productId = pd.productId;
-        nextInventory.quantity = pd.quantity;
-        nextInventory.price = pd.price;
-        nextInventory.remainQty = inventory.remainQty + pd.quantity;
-        nextInventory.isSale = false;
-        nextInventory.imei = (inventory.imei).concat(pd.imei);
-        Pos.Collection.FIFOInventory.insert(nextInventory);
-    }
-}*/
+ }
+ else {
+ var nextInventory = {};
+ nextInventory._id = idGenerator.genWithPrefix(Pos.Collection.FIFOInventory, prefix, 13);
+ nextInventory.branchId = branchId;
+ nextInventory.productId = pd.productId;
+ nextInventory.quantity = pd.quantity;
+ nextInventory.price = pd.price;
+ nextInventory.remainQty = inventory.remainQty + pd.quantity;
+ nextInventory.isSale = false;
+ nextInventory.imei = (inventory.imei).concat(pd.imei);
+ Pos.Collection.FIFOInventory.insert(nextInventory);
+ }
+ }*/
 function fifoInventoryInsert(branchId, pd, prefix) {
 //FIFO find the last record that has the same price
     var inventory = Pos.Collection.FIFOInventory.findOne({
         branchId: branchId,
         productId: pd.productId,
-        locationId:pd.locationId
+        locationId: pd.locationId
         //price: pd.price
     }, {sort: {createdAt: -1}});
     if (inventory == null) {
         var inventoryObj = {};
         inventoryObj._id = idGenerator.genWithPrefix(Pos.Collection.FIFOInventory, prefix, 13);
         inventoryObj.branchId = branchId;
-        inventoryObj.locationId=pd.locationId;
+        inventoryObj.locationId = pd.locationId;
         inventoryObj.productId = pd.productId;
         inventoryObj.quantity = pd.quantity;
         inventoryObj.price = pd.price;
@@ -73,7 +73,7 @@ function fifoInventoryInsert(branchId, pd, prefix) {
         var nextInventory = {};
         nextInventory._id = idGenerator.genWithPrefix(Pos.Collection.FIFOInventory, prefix, 13);
         nextInventory.branchId = branchId;
-        nextInventory.locationId=pd.locationId;
+        nextInventory.locationId = pd.locationId;
         nextInventory.productId = pd.productId;
         nextInventory.quantity = pd.quantity;
         nextInventory.price = pd.price;
@@ -251,7 +251,7 @@ Meteor.methods({
                     var inventories = Pos.Collection.FIFOInventory.find({
                         branchId: branchId,
                         productId: sd.productId,
-                        locationId:sd.locationId,
+                        locationId: sd.locationId,
                         isSale: false
                     }, {sort: {_id: 1}}).fetch();
                     var enoughQuantity = sd.quantity;
@@ -271,11 +271,7 @@ Meteor.methods({
                         } else {
                             inventorySet.remainQty = remainQty;
                             inventorySet.isSale = false;
-                            if ((inventories[i].remainQty - inventories[i].quantity) >= 0) {
-                                quantityOfThisPrice = inventories[i].quantity - remainQty;
-                            } else {
-                                quantityOfThisPrice = inventories[i].remainQty - sd.quantity;
-                            }
+                            quantityOfThisPrice = inventories[i].quantity - remainQty;
                         }
                         if (enoughQuantity != 0) {
                             if (quantityOfThisPrice > 0) {
@@ -313,8 +309,71 @@ Meteor.methods({
             //--- End Inventory type block "FIFO Inventory"---
         });
     },
-    locationTransferManageStock: function (saleId, branchId) {
-
+    locationTransferManageStock: function (locationTransferId, branchId) {
+        Meteor.defer(function () {
+            //---Open Inventory type block "FIFO Inventory"---
+            var locationTransferTotalCost = 0;
+            var locationTransferDetails = Pos.Collection.LocationTransferDetails.find({locationTransferId: locationTransferId});
+            var prefix = branchId + "-";
+            locationTransferDetails.forEach(function (ltd) {
+                    var transaction = [];
+                    var inventories = Pos.Collection.FIFOInventory.find({
+                        branchId: branchId,
+                        productId: ltd.productId,
+                        locationId: ltd.fromLocationId,
+                        isSale: false
+                    }, {sort: {_id: 1}}).fetch();
+                    //var enoughQuantity = ltd.quantity;
+                    for (var i = 0; i < inventories.length; i++) {
+                        //or if(enoughQuantity==0){ return false; //to stop the loop.}
+                        var inventorySet = {};
+                        var remainQty = (inventories[i].remainQty - ltd.quantity);
+                        var quantityOfThisPrice = 0;
+                        if (remainQty <= 0) {
+                            inventorySet.remainQty = 0;
+                            inventorySet.isSale = true;
+                            if ((inventories[i].remainQty - inventories[i].quantity) >= 0) {
+                                quantityOfThisPrice = inventories[i].quantity - 0;
+                            } else {
+                                quantityOfThisPrice = inventories[i].remainQty - 0;
+                            }
+                        }
+                        else {
+                            inventorySet.remainQty = remainQty;
+                            inventorySet.isSale = false;
+                            quantityOfThisPrice = inventories[i].quantity - remainQty;
+                        }
+                        //if (enoughQuantity != 0) {
+                        if (quantityOfThisPrice > 0) {
+                            transaction.push({quantity: quantityOfThisPrice, price: inventories[i].price})
+                            // transaction.push({quantity: quantityOfThisPrice, price: inventories[i].price})
+                            var purchaseDetailObj = {};
+                            purchaseDetailObj.locationId = ltd.toLocationId;
+                            purchaseDetailObj.productId = ltd.productId;
+                            purchaseDetailObj.quantity = quantityOfThisPrice;
+                            purchaseDetailObj.price = inventories[i].price;
+                            purchaseDetailObj.imei=ltd.imei;
+                            fifoInventoryInsert(branchId, purchaseDetailObj, prefix);
+                        }
+                        //}
+                        //enoughQuantity -= quantityOfThisPrice;
+                        if (i == inventories.length - 1) {
+                            inventorySet.imei = subtractImeiArray(inventories[i].imei, ltd.imei);
+                        }
+                        Pos.Collection.FIFOInventory.update(inventories[i]._id, {$set: inventorySet});
+                        // var quantityOfThisPrice = inventories[i].quantity - remainQty;
+                    }
+                    var setObj = {};
+                    setObj.transaction = transaction;
+                    Pos.Collection.LocationTransferDetails.direct.update(
+                        ltd._id,
+                        {$set: setObj}
+                    );
+                    //inventories=sortArrayByKey()
+                }
+            );
+            //--- End Inventory type block "FIFO Inventory"---
+        });
     },
     returnToInventory: function (saleId, branchId) {
         Meteor.defer(function () {
