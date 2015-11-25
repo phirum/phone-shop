@@ -6,6 +6,16 @@ Pos.Schema.StockReport = new SimpleSchema({
         type: String,
         label: "Date"
     },
+    locationId: {
+        type: String,
+        label: "Location",
+        autoform: {
+            type: "select2",
+            options:function(){
+                return Pos.List.locations();
+            }
+        }
+    },
     branch:{
         type:String,
         label:"Branch",

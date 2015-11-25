@@ -9,6 +9,7 @@ Meteor.methods({
         var params = {};
         // var date=new Date(this.date);
         var date = moment(arg.date + " 23:59:59").toDate();
+        var locationId=arg.locationId;
         var branchId = arg.branch;
         if (date != null) params.createdAt = {$lte: date};
         if (branchId != null && branchId != null) params.branchId = branchId;
@@ -27,6 +28,7 @@ Meteor.methods({
             var inventory = Pos.Collection.FIFOInventory.findOne({
                 branchId: branchId,
                 productId: p._id,
+                locationId:locationId,
                 createdAt: {$lte: date}
             }, {sort: {createdAt: -1, _id: -1}});
             if (inventory != null) {

@@ -42,6 +42,12 @@ Router.route('pos/stockReportGen', function () {
 
 posRoutes.route('/stockReport', {
     name: 'pos.stockReport',
+    subscriptions: function (params, queryParams) {
+        this.register(
+            'pos_location',
+            Meteor.subscribe('posLocation')
+        );
+    },
     action: function (params, queryParams) {
         Layout.main('pos_stockReport');
     },
