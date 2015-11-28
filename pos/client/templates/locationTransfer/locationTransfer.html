@@ -11,7 +11,6 @@
                             <label for="locationTransfer-id"> <b>ID:</b></label>
                             <input type="text" id="locationTransfer-id" class="form-control input-sm"
                                    value="{{locationTransfer._id}}" readonly>
-
                             <label for="locationTransfer-date"><b>Date <span style="color:red">*</span></b></label>
 
                             <div class='input-group date' id='locationTransfer-date'>
@@ -22,20 +21,27 @@
                                 </span>
                             </div>
                             <label for="from-location-id"> <b>From Location <span style="color:red">*</span></b></label>
-
-                            <div class="input-group select2-bootstrap-append">
-                                <select id="from-location-id" class="form-control input-sm select-two">
-                                    <option value="">Select From Location</option>
-                                    {{#each locations}}
-                                        <option value="{{_id}}"
-                                                selected="{{#if compareTwoValue _id locationTransfer.formLocationId}}selected{{/if}}">{{_id}}
-                                            | {{name}}</option>
-                                    {{/each}}
-                                </select>
+                            {{#if locationTransfer}}
+                                <input type="text"
+                                       value="{{locationTransfer.fromLocationId}}-{{locationTransfer._fromLocation.name}}"
+                                       class="form-control input-sm" readonly>
+                                <input type="text" value="{{locationTransfer.fromLocationId}}"
+                                       class="form-control input-sm hidden" id="from-location-id">
+                            {{else}}
+                                <div class="input-group select2-bootstrap-append">
+                                    <select id="from-location-id" class="form-control input-sm select-two">
+                                        <option value="">Select From Location</option>
+                                        {{#each locations}}
+                                            <option value="{{_id}}"
+                                                    selected="{{#if compareTwoValue _id locationTransfer.fromLocationId}}selected{{/if}}">{{_id}}
+                                                | {{name}}</option>
+                                        {{/each}}
+                                    </select>
                                  <span class="input-group-addon locationInsertAddon">
                             <a> <i class="fa fa-plus"></i> </a>
                             </span>
-                            </div>
+                                </div>
+                            {{/if}}
                             <label for="to-location-id"> <b>To Location <span style="color:red">*</span></b></label>
 
                             <div class="input-group select2-bootstrap-append">
@@ -62,7 +68,6 @@
                              <a > <i class="fa fa-plus"></i> </a>
                              </span>
                              </div>-->
-
                             <div style="margin-top:5px">
                                 {{#if hasLocationTransferUpdate}}
                                     <a class="btn btn-primary btn-sm" id="btn-update-locationTransfer-data">Update</a>
@@ -156,7 +161,7 @@
                         {{#each locationTransfers}}
                             <!--onclick="Session.set('hasUpdate', false);"-->
                             <li><a href="/pos/locationTransfer/{{_id}}" class="resume"
-                                   data-id="{{_id}}">{{_customer.name}}
+                                   data-id="{{_id}}">{{_staff.name}}
                                 | {{_id}}</a></li>
                         {{/each}}
                     </ul>

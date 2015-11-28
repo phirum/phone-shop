@@ -62,9 +62,8 @@ Template.pos_locationTransfer.helpers({
         return val1 == val2;
     },
     locationTransfer: function () {
-        var s = Pos.Collection.LocationTransfers.findOne(FlowRouter.getParam('locationTransferId'));
         // s.locationTransferDate = moment(s.locationTransferDate).format("DD-MM-YY, hh:mm:ss a");
-        return s;
+        return Pos.Collection.LocationTransfers.findOne(FlowRouter.getParam('locationTransferId'));
     },
     locationTransferDetails: function () {
         var locationTransferDetailItems = [];
@@ -192,29 +191,15 @@ Template.pos_locationTransfer.events({
     'click #btn-update-locationTransfer-data': function () {
         var locationTransferId = $('#locationTransfer-id').val();
         if (locationTransferId == "") return;
-        var branchId = Session.get('currentBranch');
-        var customer = $('#customer-id').val();
+        var toLocationId = $('#to-location-id').val();
         var staff = $('#staff-id').val();
         var date = $('#input-locationTransfer-date').val();
-        var transactionType = $('#transaction-type').val();
-        var description = $('#description').val();
-        var voucher = $('#voucher').val();
-        var locationTransfer = Pos.Collection.LocationTransfers.findOne({
-            branchId: branchId,
-            voucher: voucher,
-            _id: {$ne: locationTransferId}
-        });
-        if (locationTransfer != null) {
-            alertify.warning('Voucher already exists. Please input other one.');
-            return;
-        }
+
         var set = {};
-        set.customerId = customer;
         set.staffId = staff;
         set.locationTransferDate = moment(date).toDate();
-        set.transactionType = transactionType;
-        set.description = description;
-        set.voucher = voucher;
+        set.toLocationId = toLocationId;
+
         Meteor.call('updateLocationTransfer', locationTransferId, set, function (error, result) {
             if (error)alertify.error(error.message);
         });
@@ -663,7 +648,7 @@ function checkIsUpdate() {
         return;
     }
     var locationTransfer = Pos.Collection.LocationTransfers.findOne(locationTransferId);
-    var fromLocationId = $('#from-location-type').val();
+    var fromLocationId = $('#from-location-id').val();
     var toLocationId = $('#to-location-id').val();
     var staff = $('#staff-id').val();
     var date = $('#input-locationTransfer-date').val();
