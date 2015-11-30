@@ -26,6 +26,12 @@ Router.route('pos/owedCustomerReportGen', function () {
 
 posRoutes.route('/owedCustomerReport', {
     name: 'pos.owedCustomerReport',
+    subscriptions: function (params, queryParams) {
+        this.register(
+            'pos_customer',
+            Meteor.subscribe('posCustomer')
+        );
+    },
     action: function (params, queryParams) {
         Layout.main('pos_owedCustomerReport');
     },

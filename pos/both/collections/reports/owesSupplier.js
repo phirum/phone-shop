@@ -1,18 +1,17 @@
 /**
  * Schema
  */
-Pos.Schema.OwedCustomerReport = new SimpleSchema({
-    customerId:{
+Pos.Schema.OwesSupplierReport = new SimpleSchema({
+    supplierId:{
         type:String,
-        label:"Customer",
+        label:"Supplier",
         autoform: {
             type: "select2",
             options:function(){
-                return Pos.List.customer();
+                return Pos.List.supplier();
             }
         },
         optional:true
-
     },
     date: {
         type: String,

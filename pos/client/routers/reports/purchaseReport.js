@@ -25,6 +25,16 @@ Router.route('pos/purchaseReportGen', function () {
 
 posRoutes.route('/purchaseReport', {
     name: 'pos.purchaseReport',
+    subscriptions: function (params, queryParams) {
+        this.register(
+            'pos_supplier',
+            Meteor.subscribe('posSupplier')
+        );
+        this.register(
+            'pos_staff',
+            Meteor.subscribe('posStaff')
+        );
+    },
     action: function (params, queryParams) {
         Layout.main('pos_purchaseReport');
     },

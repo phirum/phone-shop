@@ -27,6 +27,16 @@ Router.route('pos/saleReportGen', function () {
 
 posRoutes.route('/saleReport', {
     name: 'pos.saleReport',
+    subscriptions: function (params, queryParams) {
+        this.register(
+            'pos_customer',
+            Meteor.subscribe('posCustomer')
+        );
+        this.register(
+            'pos_staff',
+            Meteor.subscribe('posStaff')
+        );
+    },
     action: function (params, queryParams) {
         Layout.main('pos_saleReport');
     },

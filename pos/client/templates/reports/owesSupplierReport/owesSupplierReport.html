@@ -1,6 +1,6 @@
 <!--Form-->
-<template name="pos_owedCustomerReport">
-    {{#autoForm schema=Pos.Schema.OwedCustomerReport id="pos_owedCustomerReport" action="owedCustomerReportGen" target="_blank"}}
+<template name="pos_owesSupplierReport">
+    {{#autoForm schema=Pos.Schema.OwesSupplierReport id="pos_owesSupplierReport" action="owesSupplierReportGen" target="_blank"}}
         <div class="row">
             <div class="col-md-6">
                 {{> afQuickField name='date'}}
@@ -8,7 +8,7 @@
             </div>
             <div class="col-md-6">
                 <!--{{> afQuickField name='staffId'}}-->
-                {{> afQuickField name='customerId'}}
+                {{> afQuickField name='supplierId'}}
 
             </div>
         </div>
@@ -19,7 +19,7 @@
 
 
 <!--Generate-->
-<template name="pos_owedCustomerReportGen1">
+<template name="pos_owesSupplierReportGen1">
 
     <!--Title-->
     <div class="report-title">
@@ -47,7 +47,7 @@
             <th>No</th>
             <th>InvoiceId</th>
             <th>Payment Date</th>
-            <th>Customer</th>
+            <th>Supplier</th>
             <th>DueAmount</th>
         </tr>
         </thead>
@@ -56,9 +56,9 @@
         {{#each reportHelper.payments}}
             <tr>
                 <td>{{order}}</td>
-                <td>{{saleId}}</td>
+                <td>{{purchaseId}}</td>
                 <td>{{paymentDate}}</td>
-                <td>{{customerName}}</td>
+                <td>{{supplierName}}</td>
                 <td>{{balanceAmount}}</td>
             </tr>
         {{/each}}
@@ -72,7 +72,7 @@
 
 
 <!--Generate-->
-<template name="pos_owedCustomerReportGen">
+<template name="pos_owesSupplierReportGen">
     {{#if data}}
         {{#reportTpl options}}
             {{#with data}}
@@ -80,7 +80,7 @@
                     <div class="title">
                         <div class="title-1x-kh-muol">{{khName}}</div>
                         <div class="title-1x">{{enName}}</div>
-                        <div style="text-decoration: underline;">Owed Customer Report</div>
+                        <div style="text-decoration: underline;">Owes Supplier Report</div>
                         <div class="title-2x">{{enAddress}}</div>
                     </div>
                 {{/with}}
@@ -107,7 +107,7 @@
                         <th>No</th>
                         <th>InvoiceId</th>
                         <th>Sale Date</th>
-                        <th>Customer</th>
+                        <th>Supplier</th>
                         <th>Owed Amount</th>
                     </tr>
                     </thead>
@@ -117,8 +117,8 @@
                         <tr>
                             <td>{{order}}</td>
                             <td>{{_id}}</td>
-                            <td>{{saleDate}}</td>
-                            <td>{{_customer.name}}</td>
+                            <td>{{purchaseDate}}</td>
+                            <td>{{_supplier.name}}</td>
                             <td>{{owedAmount}}</td>
                         </tr>
                     {{/each}}
